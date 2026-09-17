@@ -78,18 +78,18 @@ export default function App() {
   };
 
   const getStatusBadge = (status) => {
-    if (status === 'ติดตั้งเสร็จแล้ว' || status === 'ส่งมอบงานแล้ว') {
+    if (status === 'ติดตั้งสำเร็จ' || status === 'ส่งมอบงานแล้ว') {
       return <span className="bg-emerald-100 text-emerald-700 text-xs px-2.5 py-1 rounded-full font-bold">✓ {status}</span>;
     }
-    if (status === 'ยังไม่ได้ดำเนินการ') {
-      return <span className="bg-amber-100 text-amber-700 text-xs px-2.5 py-1 rounded-full font-bold">⏳ {status}</span>;
+    if (status === 'ยังไม่ได้ดำเนินการ' || !status) {
+      return <span className="bg-amber-100 text-amber-700 text-xs px-2.5 py-1 rounded-full font-bold">⏳ {status || 'ยังไม่ได้ดำเนินการ'}</span>;
     }
-    return <span className="bg-blue-100 text-blue-700 text-xs px-2.5 py-1 rounded-full font-bold">📄 {status || 'กำลังจัดทำรายงาน'}</span>;
+    return <span className="bg-blue-100 text-blue-700 text-xs px-2.5 py-1 rounded-full font-bold">📄 {status}</span>;
   };
 
   const getBorderColor = (status) => {
-    if (status === 'ติดตั้งเสร็จแล้ว' || status === 'ส่งมอบงานแล้ว') return 'border-t-4 border-t-emerald-500 border-x border-b border-slate-200';
-    if (status === 'ยังไม่ได้ดำเนินการ') return 'border-t-4 border-t-amber-500 border-x border-b border-slate-200';
+    if (status === 'ติดตั้งสำเร็จ' || status === 'ส่งมอบงานแล้ว') return 'border-t-4 border-t-emerald-500 border-x border-b border-slate-200';
+    if (status === 'ยังไม่ได้ดำเนินการ' || !status) return 'border-t-4 border-t-amber-500 border-x border-b border-slate-200';
     return 'border-t-4 border-t-blue-500 border-x border-b border-slate-200';
   };
 
@@ -256,8 +256,8 @@ export default function App() {
               className="text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-slate-700 font-medium cursor-pointer"
             >
               <option value="">สถานะการติดตั้ง ทั้งหมด</option>
-              <option value="ติดตั้งเสร็จแล้ว">ติดตั้งเสร็จแล้ว</option>
-              <option value="ยังไม่ได้ดำเนินการ">ยังไม่ได้ดำเนินการ</option>
+              <option value="ติดตั้งสำเร็จ">ติดตั้งสำเร็จ</option>
+              <option value="ยังไม่ได้ดำเนินการ">ยังไม่ได้ดำเนินการ / ค่าว่าง</option>
             </select>
           </div>
 
