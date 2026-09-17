@@ -15,29 +15,32 @@ export default function App() {
   const [selectedStatus, setSelectedStatus] = useState('');
   const [selectedInstallment, setSelectedInstallment] = useState('');
 
-  // ชุดข้อมูลโรงพยาบาล
-  const hospitalData = [
-    { id: '11231', name: 'โรงพยาบาลขาณุวรลักษบุรี', province: 'กำแพงเพชร', zone: '5', status: 'ยังไม่ได้ดำเนินการ', docStatus: 'ส่งมอบงานแล้ว', installment: 'งวด 5', date: '15 ก.ย. 2568', version: 'v1.2.3', installer: 'สมชาย ใจดี', pisDate: '8 ก.ย. 2568', installDate: '12 ก.ย. 2568' },
-    { id: '11232', name: 'โรงพยาบาลคลองขลุง', province: 'กำแพงเพชร', zone: '5', status: 'ยังไม่ได้ดำเนินการ', docStatus: 'ส่งมอบงานแล้ว', installment: 'งวด 5', date: '14 ก.ย. 2568', version: 'v1.2.3', installer: 'สมชาย ใจดี', pisDate: '7 ก.ย. 2568', installDate: '11 ก.ย. 2568' },
-    { id: '10694', name: 'โรงพยาบาลชัยนาทนเรนทร', province: 'ชัยนาท', zone: '5', status: 'ยังไม่ได้ดำเนินการ', docStatus: 'ส่งมอบงานแล้ว', installment: 'งวด 5', date: '13 ก.ย. 2568', version: 'v1.2.2', installer: 'วิชัย รักดี', pisDate: '6 ก.ย. 2568', installDate: '10 ก.ย. 2568' },
-    { id: '28849', name: 'โรงพยาบาลวังสมบูรณ์', province: 'สระแก้ว', zone: '7', status: 'ยังไม่ได้ดำเนินการ', docStatus: 'เอกสารเซ็นแล้วส่ง PIS', installment: 'งวด 7', date: '12 ก.ย. 2568', version: 'v1.2.0', installer: 'อนันต์ สุขใจ', pisDate: '5 ก.ย. 2568', installDate: '-' },
-    { id: '11215', name: 'โรงพยาบาลท่าตะโก', province: 'นครสวรรค์', zone: '5', status: 'ยังไม่ได้ดำเนินการ', docStatus: 'ส่งมอบงานแล้ว', installment: 'งวด 5', date: '10 ก.ย. 2568', version: 'v1.2.1', installer: 'สายชล นที', pisDate: '4 ก.ย. 2568', installDate: '8 ก.ย. 2568' },
-    { id: '10706', name: 'โรงพยาบาลศรีสังวร', province: 'เชียงใหม่', zone: '1', status: 'ติดตั้งเสร็จแล้ว', docStatus: 'ส่งมอบงานแล้ว', installment: 'งวด 3', date: '15 ก.ย. 2568', version: 'v1.2.3', installer: 'สมชาย ใจดี', pisDate: '8 ก.ย. 2568', installDate: '12 ก.ย. 2568' },
-    { id: '10987', name: 'โรงพยาบาลดอยหลวง', province: 'เชียงราย', zone: '1', status: 'ยังไม่ได้ดำเนินการ', docStatus: '-', installment: 'งวด 4', date: '-', version: '-', installer: '-', pisDate: '-', installDate: '-' },
-    { id: '11023', name: 'โรงพยาบาลแม่จัน', province: 'เชียงราย', zone: '1', status: 'ติดตั้งเสร็จแล้ว', docStatus: 'ส่งมอบงานแล้ว', installment: 'งวด 3', date: '12 ก.ย. 2568', version: 'v1.2.1', installer: 'วิชัย รักดี', pisDate: '5 ก.ย. 2568', installDate: '10 ก.ย. 2568' },
-    { id: '11074', name: 'โรงพยาบาลสันทราย', province: 'เชียงใหม่', zone: '1', status: 'กำลังจัดทำรายงาน', docStatus: 'กำลังจัดทำรายงาน', installment: 'งวด 6', date: '10 ก.ย. 2568', version: 'v1.2.0', installer: 'อนันต์ สุขใจ', pisDate: '2 ก.ย. 2568', installDate: '8 ก.ย. 2568' },
-    { id: '11112', name: 'โรงพยาบาลแม่แจ่ม', province: 'เชียงใหม่', zone: '1', status: 'ส่ง PIS ตรวจ', docStatus: 'ส่ง PIS ตรวจ', installment: 'งวด 6', date: '8 ก.ย. 2568', version: 'v1.2.0', installer: 'สมชาย ใจดี', pisDate: '1 ก.ย. 2568', installDate: '5 ก.ย. 2568' },
-    { id: '11234', name: 'โรงพยาบาลพร้าว', province: 'เชียงใหม่', zone: '1', status: 'ส่งมอบงานแล้ว', docStatus: 'ส่งมอบงานแล้ว', installment: 'งวด 7', date: '5 ก.ย. 2568', version: 'v1.2.2', installer: 'สายชล นที', pisDate: '28 ส.ค. 2568', installDate: '3 ก.ย. 2568' },
-  ];
+  // 1. เปลี่ยนมาใช้ State สำหรับเก็บข้อมูลที่ดึงมาจาก Google Sheet
+  const [hospitalData, setHospitalData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // 2. ดึงข้อมูลจาก Google Sheet เมื่อเปิดเว็บ
+  useEffect(() => {
+    fetch('https://script.google.com/macros/s/AKfycbwfetCtqQXU0u7Qy6m5dxMOZqGOQ0-P2oK5_N1yD1g7o0J8JMcBhuWQG9eGL95BKARncw/exec')
+      .then(res => res.json())
+      .then(data => {
+        setHospitalData(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Error fetching data:", err);
+        setLoading(false);
+      });
+  }, []);
 
   // ระบบกรองข้อมูล Real-time
   const filteredHospitals = useMemo(() => {
     return hospitalData.filter(item => {
-      const matchSearch = item.name.includes(searchTerm) || item.id.includes(searchTerm);
-      const matchProvince = selectedProvince ? item.province === selectedProvince : true;
-      const matchZone = selectedZone ? item.zone === selectedZone : true;
-      const matchStatus = selectedStatus ? item.status === selectedStatus : true;
-      const matchInstallment = selectedInstallment ? item.installment === selectedInstallment : true;
+      const matchSearch = item['ชื่อโรงพยาบาล'].includes(searchTerm) || item['รหัสสถานพยาบาล'].includes(searchTerm);
+      const matchProvince = selectedProvince ? item['จังหวัด'] === selectedProvince : true;
+      const matchZone = selectedZone ? item['เขต'] === selectedZone : true;
+      const matchStatus = selectedStatus ? item['สถานะการติดตั้ง'] === selectedStatus : true;
+      const matchInstallment = selectedInstallment ? item['งวดงาน'] === selectedInstallment : true;
       return matchSearch && matchProvince && matchZone && matchStatus && matchInstallment;
     });
   }, [searchTerm, selectedProvince, selectedZone, selectedStatus, selectedInstallment]);

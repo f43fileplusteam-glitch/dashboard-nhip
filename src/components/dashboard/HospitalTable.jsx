@@ -6,16 +6,20 @@ export const HospitalTable = ({ hospitalData = [] }) => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [installmentFilter, setInstallmentFilter] = useState('all');
 
-  // ระบบค้นหาและกรองข้อมูล
+  // ระบบค้นหาและกรองข้อมูล (อ้างอิงหัวคอลัมน์ภาษาไทยจาก Google Sheet)
   const filteredData = useMemo(() => {
     return hospitalData.filter(item => {
-      const matchesSearch = 
-        (item.hospitalName && item.hospitalName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (item.hospcode && item.hospcode.includes(searchTerm)) ||
-        (item.province && item.province.toLowerCase().includes(searchTerm.toLowerCase()));
+      const name = item['ชื่อโรงพยาบาล'] || '';
+      const code = item['รหัสสถานพยาบาล'] || '';
+      const province = item['จังหวัด'] || '';
 
-      const matchesStatus = statusFilter === 'all' || item.installationStatus === statusFilter;
-      const matchesInstallment = installmentFilter === 'all' || item.installment === installmentFilter;
+      const matchesSearch =
+        name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        code.includes(searchTerm) ||
+        province.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesStatus = statusFilter === 'all' || item['สถานะการติดตั้ง'] === statusFilter;
+      const matchesInstallment = installmentFilter === 'all' || item['งวดงาน'] === installmentFilter;
 
       return matchesSearch && matchesStatus && matchesInstallment;
     });
@@ -126,19 +130,19 @@ export const HospitalTable = ({ hospitalData = [] }) => {
           <tbody className="divide-y divide-slate-100 text-xs">
             {filteredData.length > 0 ? (
               filteredData.map((item, index) => (
-                <tr key={item.id || index} className="hover:bg-slate-50/80 transition-colors">
-                  <td className="py-3.5 px-4 font-mono text-slate-500 font-medium">{item.hospcode}</td>
-                  <td className="py-3.5 px-4 font-semibold text-slate-800">{item.hospitalName}</td>
+                <tr key={item['รหัสสถานพยาบาล'] || index} className="hover:bg-slate-50/80 transition-colors">
+                  <td className="py-3.5 px-4 font-mono text-slate-500">{item['รหัสสถานพยาบาล']}</td>
+                  <td className="py-3.5 px-4 font-semibold text-slate-800">{item['ชื่อโรงพยาบาล']}</td>
                   <td className="py-3.5 px-4 text-slate-600">
-                    {item.province} <span className="text-slate-400 text-[10px]">({item.region})</span>
+                    {item['จังหวัด']} <span className="text-slate-400 text-[10px]">(เขต {item['เขต']})</span>
                   </td>
                   <td className="py-3.5 px-4">
                     <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium text-[11px]">
-                      {item.installment}
+                      {item['งวดงาน']}
                     </span>
                   </td>
-                  <td className="py-3.5 px-4">{getStatusBadge(item.installationStatus)}</td>
-                  <td className="py-3.5 px-4">{getDocBadge(item.documentStatus)}</td>
+                  <td className="py-3.5 px-4">{getStatusBadge(item['สถานะการติดตั้ง'])}</td>
+                  <td className="py-3.5 px-4">{getDocBadge(item['สถานะเอกสาร'])}</td>
                 </tr>
               ))
             ) : (
