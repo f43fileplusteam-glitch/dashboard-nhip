@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { 
   Building2, LayoutGrid, Table as TableIcon, Search, 
-  Download, RotateCcw, MapPin, Monitor, ChevronRight, X, Edit3, Printer, CheckCircle2, Clock, FileText
+  Download, RotateCcw, MapPin, Monitor, ChevronRight, X, Edit3, Printer, CheckCircle2, Clock
 } from 'lucide-react';
 
 export default function App() {
@@ -13,8 +13,9 @@ export default function App() {
   const [selectedProvince, setSelectedProvince] = useState('');
   const [selectedZone, setSelectedZone] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
+  const [selectedInstallment, setSelectedInstallment] = useState('');
 
-  // ชุดข้อมูลโรงพยาบาล
+  // ชุดข้อมูลโรงพยาบาลพร้อมข้อมูลงวดงาน
   const hospitalData = [
     { id: '11231', name: 'โรงพยาบาลขาณุวรลักษบุรี', province: 'กำแพงเพชร', zone: '5', status: 'ยังไม่ได้ดำเนินการ', docStatus: 'ส่งมอบงานแล้ว', installment: 'งวด 5', date: '15 ก.ย. 2568', version: 'v1.2.3', installer: 'สมชาย ใจดี', pisDate: '8 ก.ย. 2568', installDate: '12 ก.ย. 2568' },
     { id: '11232', name: 'โรงพยาบาลคลองขลุง', province: 'กำแพงเพชร', zone: '5', status: 'ยังไม่ได้ดำเนินการ', docStatus: 'ส่งมอบงานแล้ว', installment: 'งวด 5', date: '14 ก.ย. 2568', version: 'v1.2.3', installer: 'สมชาย ใจดี', pisDate: '7 ก.ย. 2568', installDate: '11 ก.ย. 2568' },
@@ -36,15 +37,17 @@ export default function App() {
       const matchProvince = selectedProvince ? item.province === selectedProvince : true;
       const matchZone = selectedZone ? item.zone === selectedZone : true;
       const matchStatus = selectedStatus ? item.status === selectedStatus : true;
-      return matchSearch && matchProvince && matchZone && matchStatus;
+      const matchInstallment = selectedInstallment ? item.installment === selectedInstallment : true;
+      return matchSearch && matchProvince && matchZone && matchStatus && matchInstallment;
     });
-  }, [searchTerm, selectedProvince, selectedZone, selectedStatus]);
+  }, [searchTerm, selectedProvince, selectedZone, selectedStatus, selectedInstallment]);
 
   const handleReset = () => {
     setSearchTerm('');
     setSelectedProvince('');
     setSelectedZone('');
     setSelectedStatus('');
+    setSelectedInstallment('');
   };
 
   const getStatusBadge = (status) => {
@@ -93,7 +96,7 @@ export default function App() {
           <p className="text-xs text-slate-500 mt-1">ติดตามสถานะการติดตั้งและการจัดทำเอกสารของโรงพยาบาลทั่วประเทศ</p>
         </div>
 
-        {/* 1. KPI Summaries (Built-in) */}
+        {/* 1. KPI Summaries */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
             <div>
@@ -118,7 +121,42 @@ export default function App() {
           </div>
         </div>
 
-        {/* 2. Status Overview Bar */}
+        {/* 2. สรุปสถานะงวดงาน */}
+        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6">
+          <h3 className="text-xs font-bold text-slate-700 mb-3">สถานะแยกตามงวดงาน</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-7 gap-3 text-center">
+            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+              <p className="text-[11px] text-slate-500 mb-1">งวด 1</p>
+              <p className="text-lg font-black text-slate-800">120</p>
+            </div>
+            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+              <p className="text-[11px] text-slate-500 mb-1">งวด 2</p>
+              <p className="text-lg font-black text-slate-800">115</p>
+            </div>
+            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+              <p className="text-[11px] text-slate-500 mb-1">งวด 3</p>
+              <p className="text-lg font-black text-slate-800">130</p>
+            </div>
+            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+              <p className="text-[11px] text-slate-500 mb-1">งวด 4</p>
+              <p className="text-lg font-black text-slate-800">98</p>
+            </div>
+            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+              <p className="text-[11px] text-slate-500 mb-1">งวด 5</p>
+              <p className="text-lg font-black text-slate-800">142</p>
+            </div>
+            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+              <p className="text-[11px] text-slate-500 mb-1">งวด 6</p>
+              <p className="text-lg font-black text-slate-800">84</p>
+            </div>
+            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+              <p className="text-[11px] text-slate-500 mb-1">งวด 7</p>
+              <p className="text-lg font-black text-slate-800">80</p>
+            </div>
+          </div>
+        </div>
+
+        {/* 3. สถานะเอกสารตามงวดงาน */}
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6">
           <h3 className="text-xs font-bold text-slate-700 mb-3">สถานะเอกสารตามงวดงาน</h3>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-center">
@@ -145,10 +183,10 @@ export default function App() {
           </div>
         </div>
 
-        {/* 3. Filter Bar */}
+        {/* 4. Filter Bar */}
         <div className="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-wrap gap-3 items-center justify-between">
           <div className="flex flex-wrap gap-2 items-center flex-1">
-            <div className="relative min-w-[220px]">
+            <div className="relative min-w-[200px]">
               <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
               <input 
                 type="text" 
@@ -182,6 +220,20 @@ export default function App() {
               <option value="7">เขต 7</option>
             </select>
             <select 
+              value={selectedInstallment} 
+              onChange={(e) => setSelectedInstallment(e.target.value)}
+              className="text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-slate-700 font-medium cursor-pointer"
+            >
+              <option value="">งวดงาน ทั้งหมด</option>
+              <option value="งวด 1">งวด 1</option>
+              <option value="งวด 2">งวด 2</option>
+              <option value="งวด 3">งวด 3</option>
+              <option value="งวด 4">งวด 4</option>
+              <option value="งวด 5">งวด 5</option>
+              <option value="งวด 6">งวด 6</option>
+              <option value="งวด 7">งวด 7</option>
+            </select>
+            <select 
               value={selectedStatus} 
               onChange={(e) => setSelectedStatus(e.target.value)}
               className="text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-slate-700 font-medium cursor-pointer"
@@ -208,7 +260,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* 4. Display Toggle & Cards/Table View */}
+        {/* 5. Display Toggle & Cards/Table View */}
         <div className="flex justify-between items-center mb-4">
           <h3 className="font-extrabold text-slate-800 text-sm">รายการโรงพยาบาล ({filteredHospitals.length} แห่ง)</h3>
           <div className="bg-slate-200/80 p-1 rounded-xl flex gap-1">
@@ -245,8 +297,11 @@ export default function App() {
                     </div>
                     <h4 className="font-extrabold text-slate-800 text-sm mb-0.5">{hosp.name}</h4>
                     <p className="text-xs font-semibold text-slate-400 mb-3">{hosp.id}</p>
-                    <div className="flex items-center gap-1 text-[11px] text-slate-500 font-medium mb-3">
-                      <MapPin className="w-3.5 h-3.5 text-slate-400" /> {hosp.province} เขต {hosp.zone}
+                    <div className="flex items-center justify-between text-[11px] text-slate-500 font-medium mb-3">
+                      <span className="flex items-center gap-1">
+                        <MapPin className="w-3.5 h-3.5 text-slate-400" /> {hosp.province} เขต {hosp.zone}
+                      </span>
+                      <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-md font-bold">{hosp.installment}</span>
                     </div>
                     <div className="flex gap-1.5 mb-3">
                       <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-semibold">Windows</span>
@@ -282,7 +337,7 @@ export default function App() {
                         <td className="p-3 font-semibold text-slate-500">{hosp.id}</td>
                         <td className="p-3 font-bold text-slate-800">{hosp.name}</td>
                         <td className="p-3 text-slate-600">{hosp.province} (เขต {hosp.zone})</td>
-                        <td className="p-3 text-slate-600">{hosp.installment}</td>
+                        <td className="p-3 font-bold text-purple-600">{hosp.installment}</td>
                         <td className="p-3">{getStatusBadge(hosp.status)}</td>
                         <td className="p-3 text-slate-600">{hosp.docStatus}</td>
                       </tr>
@@ -293,7 +348,7 @@ export default function App() {
             )}
           </div>
 
-          {/* 5. Detail Drawer */}
+          {/* 6. Detail Drawer */}
           {selectedHospital && (
             <div className="lg:col-span-4 bg-white rounded-2xl border border-slate-200 p-5 shadow-lg relative h-fit sticky top-6">
               <button 
@@ -326,7 +381,7 @@ export default function App() {
               <div className="space-y-3 text-xs text-slate-600 mb-6">
                 <div className="flex justify-between py-1 border-b border-slate-50">
                   <span className="text-slate-400">งวดงาน</span>
-                  <span className="font-bold text-slate-800">{selectedHospital.installment}</span>
+                  <span className="font-bold text-purple-600">{selectedHospital.installment}</span>
                 </div>
                 <div className="flex justify-between py-1 border-b border-slate-50">
                   <span className="text-slate-400">สถานะการติดตั้ง</span>
