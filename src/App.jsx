@@ -121,39 +121,31 @@ export default function App() {
           </div>
         </div>
 
-        {/* 2. สถานะงวดงาน (ซ้าย) และ สถานะเอกสาร (ขวา) ในแถวเดียวกัน */}
+        {/* 2. สถานะงวดงาน (ตัดงวด 1-2 ออก + แสดงเป้าหมาย) และ สถานะเอกสาร */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-6">
-          {/* ซ้าย: สถานะแยกตามงวดงาน */}
+          {/* ซ้าย: สถานะแยกตามงวดงาน (เริ่มงวด 3 - 7) */}
           <div className="lg:col-span-6 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
             <h3 className="text-xs font-bold text-slate-700 mb-3">สถานะแยกตามงวดงาน</h3>
-            <div className="grid grid-cols-4 sm:grid-cols-7 gap-2 text-center">
-              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                <p className="text-[10px] text-slate-500 mb-1">งวด 1</p>
-                <p className="text-base font-black text-slate-800">120</p>
-              </div>
-              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                <p className="text-[10px] text-slate-500 mb-1">งวด 2</p>
-                <p className="text-base font-black text-slate-800">115</p>
-              </div>
+            <div className="grid grid-cols-5 gap-2 text-center">
               <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
                 <p className="text-[10px] text-slate-500 mb-1">งวด 3</p>
-                <p className="text-base font-black text-slate-800">130</p>
+                <p className="text-base font-black text-slate-800">130<span className="text-xs font-normal text-slate-400">/50</span></p>
               </div>
               <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
                 <p className="text-[10px] text-slate-500 mb-1">งวด 4</p>
-                <p className="text-base font-black text-slate-800">98</p>
+                <p className="text-base font-black text-slate-800">98<span className="text-xs font-normal text-slate-400">/150</span></p>
               </div>
               <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
                 <p className="text-[10px] text-slate-500 mb-1">งวด 5</p>
-                <p className="text-base font-black text-slate-800">142</p>
+                <p className="text-base font-black text-slate-800">142<span className="text-xs font-normal text-slate-400">/223</span></p>
               </div>
               <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
                 <p className="text-[10px] text-slate-500 mb-1">งวด 6</p>
-                <p className="text-base font-black text-slate-800">84</p>
+                <p className="text-base font-black text-slate-800">84<span className="text-xs font-normal text-slate-400">/173</span></p>
               </div>
               <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
                 <p className="text-[10px] text-slate-500 mb-1">งวด 7</p>
-                <p className="text-base font-black text-slate-800">80</p>
+                <p className="text-base font-black text-slate-800">80<span className="text-xs font-normal text-slate-400">/173</span></p>
               </div>
             </div>
           </div>
@@ -228,8 +220,6 @@ export default function App() {
               className="text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-slate-700 font-medium cursor-pointer"
             >
               <option value="">งวดงาน ทั้งหมด</option>
-              <option value="งวด 1">งวด 1</option>
-              <option value="งวด 2">งวด 2</option>
               <option value="งวด 3">งวด 3</option>
               <option value="งวด 4">งวด 4</option>
               <option value="งวด 5">งวด 5</option>
