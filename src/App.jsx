@@ -81,15 +81,15 @@ export default function App() {
     if (status === 'ติดตั้งสำเร็จ' || status === 'ส่งมอบงานแล้ว') {
       return <span className="bg-emerald-100 text-emerald-700 text-xs px-2.5 py-1 rounded-full font-bold">✓ {status}</span>;
     }
-    if (status === 'ยังไม่ได้ดำเนินการ' || !status) {
-      return <span className="bg-amber-100 text-amber-700 text-xs px-2.5 py-1 rounded-full font-bold">⏳ {status || 'ยังไม่ได้ดำเนินการ'}</span>;
+    if (status === 'ยังไม่ดำเนินการ' || !status) {
+      return <span className="bg-amber-100 text-amber-700 text-xs px-2.5 py-1 rounded-full font-bold">⏳ {status || 'ยังไม่ดำเนินการ'}</span>;
     }
     return <span className="bg-blue-100 text-blue-700 text-xs px-2.5 py-1 rounded-full font-bold">📄 {status}</span>;
   };
 
   const getBorderColor = (status) => {
     if (status === 'ติดตั้งสำเร็จ' || status === 'ส่งมอบงานแล้ว') return 'border-t-4 border-t-emerald-500 border-x border-b border-slate-200';
-    if (status === 'ยังไม่ได้ดำเนินการ' || !status) return 'border-t-4 border-t-amber-500 border-x border-b border-slate-200';
+    if (status === 'ยังไม่ดำเนินการ' || !status) return 'border-t-4 border-t-amber-500 border-x border-b border-slate-200';
     return 'border-t-4 border-t-blue-500 border-x border-b border-slate-200';
   };
 
@@ -134,14 +134,14 @@ export default function App() {
           </div>
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between border-l-4 border-l-emerald-500">
             <div>
-              <p className="text-xs font-semibold text-slate-500 mb-1">ติดตั้งเสร็จแล้ว</p>
+              <p className="text-xs font-semibold text-slate-500 mb-1">ติดตั้งสำเร็จ</p>
               <p className="text-3xl font-black text-emerald-600">520 <span className="text-xs font-normal text-slate-400">แห่ง (67.6%)</span></p>
             </div>
             <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center"><CheckCircle2 className="w-6 h-6" /></div>
           </div>
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between border-l-4 border-l-amber-500">
             <div>
-              <p className="text-xs font-semibold text-slate-500 mb-1">ยังไม่ได้ดำเนินการ</p>
+              <p className="text-xs font-semibold text-slate-500 mb-1">ยังไม่ดำเนินการ</p>
               <p className="text-3xl font-black text-amber-600">249 <span className="text-xs font-normal text-slate-400">แห่ง (32.4%)</span></p>
             </div>
             <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center"><Clock className="w-6 h-6" /></div>
@@ -257,7 +257,7 @@ export default function App() {
             >
               <option value="">สถานะการติดตั้ง ทั้งหมด</option>
               <option value="ติดตั้งสำเร็จ">ติดตั้งสำเร็จ</option>
-              <option value="ยังไม่ได้ดำเนินการ">ยังไม่ได้ดำเนินการ / ค่าว่าง</option>
+              <option value="ยังไม่ดำเนินการ">ยังไม่ดำเนินการ</option>
             </select>
           </div>
 
