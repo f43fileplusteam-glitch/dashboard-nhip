@@ -1,9 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import KpiCards from './components/dashboard/KpiCards';
-import ChartsSection from './components/dashboard/ChartsSection';
 import { 
   Building2, LayoutGrid, Table as TableIcon, Search, 
-  Download, RotateCcw, MapPin, Monitor, ChevronRight, X, Edit3, Printer, CheckCircle2
+  Download, RotateCcw, MapPin, Monitor, ChevronRight, X, Edit3, Printer, CheckCircle2, Clock, FileText
 } from 'lucide-react';
 
 export default function App() {
@@ -16,7 +14,7 @@ export default function App() {
   const [selectedZone, setSelectedZone] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
 
-  // ชุดข้อมูลโรงพยาบาลฉบับสมบูรณ์ (ดึงตามฟิลด์เดิมของระบบ)
+  // ชุดข้อมูลโรงพยาบาล
   const hospitalData = [
     { id: '11231', name: 'โรงพยาบาลขาณุวรลักษบุรี', province: 'กำแพงเพชร', zone: '5', status: 'ยังไม่ได้ดำเนินการ', docStatus: 'ส่งมอบงานแล้ว', installment: 'งวด 5', date: '15 ก.ย. 2568', version: 'v1.2.3', installer: 'สมชาย ใจดี', pisDate: '8 ก.ย. 2568', installDate: '12 ก.ย. 2568' },
     { id: '11232', name: 'โรงพยาบาลคลองขลุง', province: 'กำแพงเพชร', zone: '5', status: 'ยังไม่ได้ดำเนินการ', docStatus: 'ส่งมอบงานแล้ว', installment: 'งวด 5', date: '14 ก.ย. 2568', version: 'v1.2.3', installer: 'สมชาย ใจดี', pisDate: '7 ก.ย. 2568', installDate: '11 ก.ย. 2568' },
@@ -95,12 +93,56 @@ export default function App() {
           <p className="text-xs text-slate-500 mt-1">ติดตามสถานะการติดตั้งและการจัดทำเอกสารของโรงพยาบาลทั่วประเทศ</p>
         </div>
 
-        {/* 1. KPI Cards เดิม */}
-        <KpiCards />
+        {/* 1. KPI Summaries (Built-in) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold text-slate-500 mb-1">สถานะการติดตั้งทั้งหมด</p>
+              <p className="text-3xl font-black text-slate-800">769 <span className="text-xs font-normal text-slate-400">แห่ง</span></p>
+            </div>
+            <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">🏥</div>
+          </div>
+          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between border-l-4 border-l-emerald-500">
+            <div>
+              <p className="text-xs font-semibold text-slate-500 mb-1">ติดตั้งเสร็จแล้ว</p>
+              <p className="text-3xl font-black text-emerald-600">520 <span className="text-xs font-normal text-slate-400">แห่ง (67.6%)</span></p>
+            </div>
+            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center"><CheckCircle2 className="w-6 h-6" /></div>
+          </div>
+          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between border-l-4 border-l-amber-500">
+            <div>
+              <p className="text-xs font-semibold text-slate-500 mb-1">ยังไม่ได้ดำเนินการ</p>
+              <p className="text-3xl font-black text-amber-600">249 <span className="text-xs font-normal text-slate-400">แห่ง (32.4%)</span></p>
+            </div>
+            <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center"><Clock className="w-6 h-6" /></div>
+          </div>
+        </div>
 
-        {/* 2. Charts Section เดิม (ส่วนกราฟความก้าวหน้า + สัดส่วนเอกสาร) */}
-        <div className="my-6">
-          <ChartsSection hospitalData={hospitalData} />
+        {/* 2. Status Overview Bar */}
+        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6">
+          <h3 className="text-xs font-bold text-slate-700 mb-3">สถานะเอกสารตามงวดงาน</h3>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-center">
+            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+              <p className="text-[11px] text-slate-500 mb-1">กำลังจัดทำรายงาน</p>
+              <p className="text-lg font-black text-blue-600">45</p>
+            </div>
+            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+              <p className="text-[11px] text-slate-500 mb-1">ส่ง PIS ตรวจ</p>
+              <p className="text-lg font-black text-indigo-600">38</p>
+            </div>
+            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+              <p className="text-[11px] text-slate-500 mb-1">ส่ง รพ. เซ็น</p>
+              <p className="text-lg font-black text-purple-600">62</p>
+            </div>
+            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+              <p className="text-[11px] text-slate-500 mb-1">มีลายเซ็น PIS</p>
+              <p className="text-lg font-black text-teal-600">54</p>
+            </div>
+            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+              <p className="text-[11px] text-slate-500 mb-1">ส่งมอบงานแล้ว</p>
+              <p className="text-lg font-black text-emerald-600">410</p>
+            </div>
+          </div>
         </div>
 
         {/* 3. Filter Bar */}
