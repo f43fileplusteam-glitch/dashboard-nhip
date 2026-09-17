@@ -14,6 +14,7 @@ export default function App() {
   const [selectedZone, setSelectedZone] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
   const [selectedInstallment, setSelectedInstallment] = useState('');
+  const [selectedDocStatus, setSelectedDocStatus] = useState('');
 
   // 1. State สำหรับเก็บข้อมูลจาก Google Sheet
   const [hospitalData, setHospitalData] = useState([]);
@@ -46,6 +47,10 @@ export default function App() {
     return [...new Set(hospitalData.map(item => item['งวดงาน']).filter(Boolean))];
   }, [hospitalData]);
 
+  const docStatusList = useMemo(() => {
+    return [...new Set(hospitalData.map(item => item['สถานะเอกสาร']).filter(Boolean))];
+  }, [hospitalData]);
+
   // ระบบกรองข้อมูล Real-time (แปลงค่าเป็น String ป้องกันหน้าจอขาว)
   const filteredHospitals = useMemo(() => {
     return hospitalData.filter(item => {
@@ -55,6 +60,7 @@ export default function App() {
       const zone = String(item['เขต'] || '');
       const status = String(item['สถานะการติดตั้ง'] || '');
       const installment = String(item['งวดงาน'] || '');
+      const docStatus = String(item['สถานะเอกสาร'] || '');
 
       const matchSearch = name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           code.includes(searchTerm) || 
@@ -64,10 +70,11 @@ export default function App() {
       const matchZone = selectedZone ? zone.includes(selectedZone) : true;
       const matchStatus = selectedStatus ? status.includes(selectedStatus) : true;
       const matchInstallment = selectedInstallment ? installment.includes(selectedInstallment) : true;
+      const matchDocStatus = selectedDocStatus ? docStatus.includes(selectedDocStatus) : true;
 
-      return matchSearch && matchProvince && matchZone && matchStatus && matchInstallment;
+      return matchSearch && matchProvince && matchZone && matchStatus && matchInstallment && matchDocStatus;
     });
-  }, [hospitalData, searchTerm, selectedProvince, selectedZone, selectedStatus, selectedInstallment]);
+  }, [hospitalData, searchTerm, selectedProvince, selectedZone, selectedStatus, selectedInstallment, selectedDocStatus]);
 
   const handleReset = () => {
     setSearchTerm('');
@@ -75,21 +82,22 @@ export default function App() {
     setSelectedZone('');
     setSelectedStatus('');
     setSelectedInstallment('');
+    setSelectedDocStatus('');
   };
 
   const getStatusBadge = (status) => {
     if (status === 'ติดตั้งสำเร็จ' || status === 'ส่งมอบงานแล้ว') {
       return <span className="bg-emerald-100 text-emerald-700 text-xs px-2.5 py-1 rounded-full font-bold">✓ {status}</span>;
     }
-    if (status === 'ยังไม่ดำเนินการ' || !status) {
-      return <span className="bg-amber-100 text-amber-700 text-xs px-2.5 py-1 rounded-full font-bold">⏳ {status || 'ยังไม่ดำเนินการ'}</span>;
+    if (status === 'ยังไม่ได้ดำเนินการ' || !status) {
+      return <span className="bg-amber-100 text-amber-700 text-xs px-2.5 py-1 rounded-full font-bold">⏳ {status || 'ยังไม่ได้ดำเนินการ'}</span>;
     }
     return <span className="bg-blue-100 text-blue-700 text-xs px-2.5 py-1 rounded-full font-bold">📄 {status}</span>;
   };
 
   const getBorderColor = (status) => {
     if (status === 'ติดตั้งสำเร็จ' || status === 'ส่งมอบงานแล้ว') return 'border-t-4 border-t-emerald-500 border-x border-b border-slate-200';
-    if (status === 'ยังไม่ดำเนินการ' || !status) return 'border-t-4 border-t-amber-500 border-x border-b border-slate-200';
+    if (status === 'ยังไม่ได้ดำเนินการ' || !status) return 'border-t-4 border-t-amber-500 border-x border-b border-slate-200';
     return 'border-t-4 border-t-blue-500 border-x border-b border-slate-200';
   };
 
@@ -141,65 +149,10 @@ export default function App() {
           </div>
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between border-l-4 border-l-amber-500">
             <div>
-              <p className="text-xs font-semibold text-slate-500 mb-1">ยังไม่ดำเนินการ</p>
+              <p className="text-xs font-semibold text-slate-500 mb-1">ยังไม่ได้ดำเนินการ</p>
               <p className="text-3xl font-black text-amber-600">249 <span className="text-xs font-normal text-slate-400">แห่ง (32.4%)</span></p>
             </div>
             <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center"><Clock className="w-6 h-6" /></div>
-          </div>
-        </div>
-
-        {/* 2. สถานะงวดงาน & สถานะเอกสาร */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-6">
-          <div className="lg:col-span-6 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
-            <h3 className="text-xs font-bold text-slate-700 mb-3">สถานะแยกตามงวดงาน</h3>
-            <div className="grid grid-cols-5 gap-2 text-center">
-              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                <p className="text-[10px] text-slate-500 mb-1">งวด 3</p>
-                <p className="text-base font-black text-slate-800">130<span className="text-xs font-normal text-slate-400">/50</span></p>
-              </div>
-              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                <p className="text-[10px] text-slate-500 mb-1">งวด 4</p>
-                <p className="text-base font-black text-slate-800">98<span className="text-xs font-normal text-slate-400">/150</span></p>
-              </div>
-              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                <p className="text-[10px] text-slate-500 mb-1">งวด 5</p>
-                <p className="text-base font-black text-slate-800">142<span className="text-xs font-normal text-slate-400">/223</span></p>
-              </div>
-              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                <p className="text-[10px] text-slate-500 mb-1">งวด 6</p>
-                <p className="text-base font-black text-slate-800">84<span className="text-xs font-normal text-slate-400">/173</span></p>
-              </div>
-              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                <p className="text-[10px] text-slate-500 mb-1">งวด 7</p>
-                <p className="text-base font-black text-slate-800">80<span className="text-xs font-normal text-slate-400">/173</span></p>
-              </div>
-            </div>
-          </div>
-
-          <div className="lg:col-span-6 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
-            <h3 className="text-xs font-bold text-slate-700 mb-3">สถานะเอกสารตามงวดงาน</h3>
-            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 text-center">
-              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                <p className="text-[10px] text-slate-500 mb-1">กำลังจัดทำรายงาน</p>
-                <p className="text-base font-black text-blue-600">45</p>
-              </div>
-              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                <p className="text-[10px] text-slate-500 mb-1">ส่ง PIS ตรวจ</p>
-                <p className="text-base font-black text-indigo-600">38</p>
-              </div>
-              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                <p className="text-[10px] text-slate-500 mb-1">ส่ง รพ. เซ็น</p>
-                <p className="text-base font-black text-purple-600">62</p>
-              </div>
-              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                <p className="text-[10px] text-slate-500 mb-1">มีลายเซ็น PIS</p>
-                <p className="text-base font-black text-teal-600">54</p>
-              </div>
-              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                <p className="text-[10px] text-slate-500 mb-1">ส่งมอบงานแล้ว</p>
-                <p className="text-base font-black text-emerald-600">410</p>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -257,7 +210,18 @@ export default function App() {
             >
               <option value="">สถานะการติดตั้ง ทั้งหมด</option>
               <option value="ติดตั้งสำเร็จ">ติดตั้งสำเร็จ</option>
-              <option value="ยังไม่ดำเนินการ">ยังไม่ดำเนินการ</option>
+              <option value="ยังไม่ได้ดำเนินการ">ยังไม่ได้ดำเนินการ</option>
+            </select>
+
+            <select 
+              value={selectedDocStatus} 
+              onChange={(e) => setSelectedDocStatus(e.target.value)}
+              className="text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-slate-700 font-medium cursor-pointer"
+            >
+              <option value="">สถานะเอกสาร ทั้งหมด</option>
+              {docStatusList.map((doc, index) => (
+                <option key={index} value={doc}>{doc}</option>
+              ))}
             </select>
           </div>
 
@@ -322,12 +286,8 @@ export default function App() {
                       </span>
                       <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-md font-bold">{hosp['งวดงาน']}</span>
                     </div>
-                    <div className="flex gap-1.5 mb-3">
-                      <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-semibold">Windows</span>
-                      <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-semibold">Ubuntu</span>
-                    </div>
                     <div className="pt-2 border-t border-slate-100 flex justify-between items-center text-[11px] text-slate-400">
-                      <span>อัปเดตล่าสุด -</span>
+                      <span>สถานะเอกสาร: <strong className="text-slate-600">{hosp['สถานะเอกสาร'] || '-'}</strong></span>
                       <ChevronRight className="w-4 h-4 text-blue-600 font-bold" />
                     </div>
                   </div>
@@ -358,7 +318,7 @@ export default function App() {
                         <td className="p-3 text-slate-600">{hosp['จังหวัด']} (เขต {hosp['เขต']})</td>
                         <td className="p-3 font-bold text-purple-600">{hosp['งวดงาน']}</td>
                         <td className="p-3">{getStatusBadge(hosp['สถานะการติดตั้ง'])}</td>
-                        <td className="p-3 text-slate-600">{hosp['สถานะเอกสาร'] || 'กำลังจัดทำรายงาน'}</td>
+                        <td className="p-3 text-slate-600 font-medium">{hosp['สถานะเอกสาร'] || '-'}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -404,11 +364,11 @@ export default function App() {
                 </div>
                 <div className="flex justify-between py-1 border-b border-slate-50">
                   <span className="text-slate-400">สถานะการติดตั้ง</span>
-                  <span className="font-bold text-emerald-600">✓ {selectedHospital['สถานะการติดตั้ง']}</span>
+                  <span className="font-bold text-emerald-600">✓ {selectedHospital['สถานะการติดตั้ง'] || '-'}</span>
                 </div>
                 <div className="flex justify-between py-1 border-b border-slate-50">
                   <span className="text-slate-400">สถานะเอกสาร</span>
-                  <span className="font-bold text-emerald-600">✓ {selectedHospital['สถานะเอกสาร'] || 'กำลังจัดทำรายงาน'}</span>
+                  <span className="font-bold text-blue-600">{selectedHospital['สถานะเอกสาร'] || '-'}</span>
                 </div>
               </div>
 
