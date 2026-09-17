@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Building2, LayoutGrid, Table as TableIcon, Search, 
-  Download, RotateCcw, MapPin, Monitor, ChevronRight, X, Edit3, Printer, CheckCircle2, Clock
+  Download, RotateCcw, MapPin, Monitor, ChevronRight, X, CheckCircle2, Clock, Maximize2, Minimize2
 } from 'lucide-react';
 
 export default function App() {
@@ -15,6 +15,7 @@ export default function App() {
   const [selectedStatus, setSelectedStatus] = useState('');
   const [selectedInstallment, setSelectedInstallment] = useState('');
   const [selectedDocStatus, setSelectedDocStatus] = useState('');
+  const [selectedSystem, setSelectedSystem] = useState(''); // เพิ่ม State สำหรับกรองระบบ
 
   // 1. State สำหรับเก็บข้อมูลจาก Google Sheet
   const [hospitalData, setHospitalData] = useState([]);
@@ -44,14 +45,54 @@ export default function App() {
   }, [hospitalData]);
 
   const installmentList = useMemo(() => {
-    return [...new Set(hospitalData.map(item => item['งวดงาน']).filter(Boolean))];
+    return [...new Set(hospitalData.map(item => item['งวดงาน']).filter(Boolean))].sort();
   }, [hospitalData]);
 
   const docStatusList = useMemo(() => {
-    return [...new Set(hospitalData.map(item => item['สถานะเอกสาร']).filter(Boolean))];
+    return [...new Set(hospitalData.map(item => item['สถานะเอกสาร']).filter(Boolean))].sort();
   }, [hospitalData]);
 
-  // ระบบกรองข้อมูล Real-time (แปลงค่าเป็น String ป้องกันหน้าจอขาว)
+  const systemList = useMemo(() => {
+    return [...new Set(hospitalData.map(item => item['ระบบ']).filter(Boolean))].sort();
+  }, [hospitalData]);
+
+  // กำหนดเป้าหมายของแต่ละงวดตามที่ระบุ
+  const installmentTargets = {
+    '3': 50,
+    '4': 150,
+    '5': 223,
+    '6': 173,
+    '7': 173
+  };
+
+  // คำนวณสถิติภาพรวมจากข้อมูลจริง
+  const stats = useMemo(() => {
+    const total = hospitalData.length;
+    const completed = hospitalData.filter(item => String(item['สถานะการติดตั้ง'] || '').includes('ติดตั้งสำเร็จ') || String(item['สถานะการติดตั้ง'] || '').includes('ส่งมอบงานแล้ว')).length;
+    const pending = total - completed;
+
+    // นับจำนวนตามงวดงาน
+    const installmentCounts = {};
+    hospitalData.forEach(item => {
+      const inst = String(item['งวดงาน'] || '').trim();
+      if (inst) {
+        installmentCounts[inst] = (installmentCounts[inst] || 0) + 1;
+      }
+    });
+
+    // นับจำนวนตามสถานะเอกสาร
+    const docStatusCounts = {};
+    hospitalData.forEach(item => {
+      const doc = String(item['สถานะเอกสาร'] || '').trim();
+      if (doc) {
+        docStatusCounts[doc] = (docStatusCounts[doc] || 0) + 1;
+      }
+    });
+
+    return { total, completed, pending, installmentCounts, docStatusCounts };
+  }, [hospitalData]);
+
+  // ระบบกรองข้อมูล Real-time
   const filteredHospitals = useMemo(() => {
     return hospitalData.filter(item => {
       const name = String(item['ชื่อโรงพยาบาล'] || '');
@@ -61,6 +102,7 @@ export default function App() {
       const status = String(item['สถานะการติดตั้ง'] || '');
       const installment = String(item['งวดงาน'] || '');
       const docStatus = String(item['สถานะเอกสาร'] || '');
+      const system = String(item['ระบบ'] || '');
 
       const matchSearch = name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           code.includes(searchTerm) || 
@@ -71,10 +113,11 @@ export default function App() {
       const matchStatus = selectedStatus ? status.includes(selectedStatus) : true;
       const matchInstallment = selectedInstallment ? installment.includes(selectedInstallment) : true;
       const matchDocStatus = selectedDocStatus ? docStatus.includes(selectedDocStatus) : true;
+      const matchSystem = selectedSystem ? system.includes(selectedSystem) : true;
 
-      return matchSearch && matchProvince && matchZone && matchStatus && matchInstallment && matchDocStatus;
+      return matchSearch && matchProvince && matchZone && matchStatus && matchInstallment && matchDocStatus && matchSystem;
     });
-  }, [hospitalData, searchTerm, selectedProvince, selectedZone, selectedStatus, selectedInstallment, selectedDocStatus]);
+  }, [hospitalData, searchTerm, selectedProvince, selectedZone, selectedStatus, selectedInstallment, selectedDocStatus, selectedSystem]);
 
   const handleReset = () => {
     setSearchTerm('');
@@ -83,22 +126,30 @@ export default function App() {
     setSelectedStatus('');
     setSelectedInstallment('');
     setSelectedDocStatus('');
+    setSelectedSystem('');
   };
 
   const getStatusBadge = (status) => {
     if (status === 'ติดตั้งสำเร็จ' || status === 'ส่งมอบงานแล้ว') {
       return <span className="bg-emerald-100 text-emerald-700 text-xs px-2.5 py-1 rounded-full font-bold">✓ {status}</span>;
     }
-    if (status === 'ยังไม่ได้ดำเนินการ' || !status) {
-      return <span className="bg-amber-100 text-amber-700 text-xs px-2.5 py-1 rounded-full font-bold">⏳ {status || 'ยังไม่ได้ดำเนินการ'}</span>;
+    if (status === 'ยังไม่ดำเนินการ' || !status) {
+      return <span className="bg-amber-100 text-amber-700 text-xs px-2.5 py-1 rounded-full font-bold">⏳ {status || 'ยังไม่ดำเนินการ'}</span>;
     }
     return <span className="bg-blue-100 text-blue-700 text-xs px-2.5 py-1 rounded-full font-bold">📄 {status}</span>;
   };
 
   const getBorderColor = (status) => {
     if (status === 'ติดตั้งสำเร็จ' || status === 'ส่งมอบงานแล้ว') return 'border-t-4 border-t-emerald-500 border-x border-b border-slate-200';
-    if (status === 'ยังไม่ได้ดำเนินการ' || !status) return 'border-t-4 border-t-amber-500 border-x border-b border-slate-200';
+    if (status === 'ยังไม่ดำเนินการ' || !status) return 'border-t-4 border-t-amber-500 border-x border-b border-slate-200';
     return 'border-t-4 border-t-blue-500 border-x border-b border-slate-200';
+  };
+
+  // ฟังก์ชันแปลงวันที่ให้แสดงแค่ปี-เดือน-วัน (เช่น 2569-03-29)
+  const formatDate = (dateString) => {
+    if (!dateString) return '-';
+    const cleanDate = String(dateString).split('T')[0];
+    return cleanDate;
   };
 
   return (
@@ -136,21 +187,25 @@ export default function App() {
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
             <div>
               <p className="text-xs font-semibold text-slate-500 mb-1">สถานะการติดตั้งทั้งหมด</p>
-              <p className="text-3xl font-black text-slate-800">{hospitalData.length || 769} <span className="text-xs font-normal text-slate-400">แห่ง</span></p>
+              <p className="text-3xl font-black text-slate-800">{stats.total} <span className="text-xs font-normal text-slate-400">แห่ง</span></p>
             </div>
             <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">🏥</div>
           </div>
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between border-l-4 border-l-emerald-500">
             <div>
               <p className="text-xs font-semibold text-slate-500 mb-1">ติดตั้งสำเร็จ</p>
-              <p className="text-3xl font-black text-emerald-600">520 <span className="text-xs font-normal text-slate-400">แห่ง (67.6%)</span></p>
+              <p className="text-3xl font-black text-emerald-600">
+                {stats.completed} <span className="text-xs font-normal text-slate-400">แห่ง ({stats.total ? ((stats.completed / stats.total) * 100).toFixed(1) : 0}%)</span>
+              </p>
             </div>
             <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center"><CheckCircle2 className="w-6 h-6" /></div>
           </div>
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between border-l-4 border-l-amber-500">
             <div>
-              <p className="text-xs font-semibold text-slate-500 mb-1">ยังไม่ได้ดำเนินการ</p>
-              <p className="text-3xl font-black text-amber-600">249 <span className="text-xs font-normal text-slate-400">แห่ง (32.4%)</span></p>
+              <p className="text-xs font-semibold text-slate-500 mb-1">ยังไม่ดำเนินการ</p>
+              <p className="text-3xl font-black text-amber-600">
+                {stats.pending} <span className="text-xs font-normal text-slate-400">แห่ง ({stats.total ? ((stats.pending / stats.total) * 100).toFixed(1) : 0}%)</span>
+              </p>
             </div>
             <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center"><Clock className="w-6 h-6" /></div>
           </div>
@@ -158,54 +213,43 @@ export default function App() {
 
         {/* 2. สถานะงวดงาน & สถานะเอกสาร */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-6">
-          <div className="lg:col-span-6 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div className="lg:col-span-5 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
             <h3 className="text-xs font-bold text-slate-700 mb-3">สถานะแยกตามงวดงาน</h3>
-            <div className="grid grid-cols-5 gap-2 text-center">
-              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                <p className="text-[10px] text-slate-500 mb-1">งวด 3</p>
-                <p className="text-base font-black text-slate-800">130</p>
-              </div>
-              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                <p className="text-[10px] text-slate-500 mb-1">งวด 4</p>
-                <p className="text-base font-black text-slate-800">98</p>
-              </div>
-              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                <p className="text-[10px] text-slate-500 mb-1">งวด 5</p>
-                <p className="text-base font-black text-slate-800">142</p>
-              </div>
-              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                <p className="text-[10px] text-slate-500 mb-1">งวด 6</p>
-                <p className="text-base font-black text-slate-800">84</p>
-              </div>
-              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                <p className="text-[10px] text-slate-500 mb-1">งวด 7</p>
-                <p className="text-base font-black text-slate-800">80</p>
-              </div>
+            <div className="grid grid-cols-5 gap-1.5 text-center">
+              {['3', '4', '5', '6', '7'].map(inst => (
+                <div key={inst} className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                  <p className="text-[10px] text-slate-500 mb-1">งวด {inst}</p>
+                  <p className="text-sm font-black text-slate-800">
+                    {stats.installmentCounts[inst] || 0}
+                    <span className="text-[10px] font-normal text-slate-400 block">/ {installmentTargets[inst]}</span>
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
 
-          <div className="lg:col-span-6 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div className="lg:col-span-7 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
             <h3 className="text-xs font-bold text-slate-700 mb-3">สถานะเอกสารภาพรวม</h3>
-            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 text-center">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center">
               <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
                 <p className="text-[10px] text-slate-500 mb-1">กำลังจัดทำรายงาน</p>
-                <p className="text-base font-black text-blue-600">45</p>
+                <p className="text-base font-black text-blue-600">{stats.docStatusCounts['กำลังจัดทำรายงาน'] || 0}</p>
               </div>
               <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
                 <p className="text-[10px] text-slate-500 mb-1">ส่งเอกสารให้ PI</p>
-                <p className="text-base font-black text-indigo-600">38</p>
+                <p className="text-base font-black text-indigo-600">{stats.docStatusCounts['ส่งเอกสารให้ PI'] || 0}</p>
               </div>
               <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
                 <p className="text-[10px] text-slate-500 mb-1">ส่ง รพ. แล้ว</p>
-                <p className="text-base font-black text-purple-600">62</p>
+                <p className="text-base font-black text-purple-600">{stats.docStatusCounts['ส่งโรงพยาบาลแล้ว'] || stats.docStatusCounts['ส่ง รพ. แล้ว'] || 0}</p>
               </div>
               <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
                 <p className="text-[10px] text-slate-500 mb-1">รพ. เซ็นแล้ว</p>
-                <p className="text-base font-black text-teal-600">54</p>
+                <p className="text-base font-black text-teal-600">{stats.docStatusCounts['โรงพยาบาลเซ็นแล้ว'] || stats.docStatusCounts['รพ. เซ็นแล้ว'] || 0}</p>
               </div>
-              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 col-span-2 sm:col-span-1">
                 <p className="text-[10px] text-slate-500 mb-1">ส่งมอบงานแล้ว</p>
-                <p className="text-base font-black text-emerald-600">410</p>
+                <p className="text-base font-black text-emerald-600">{stats.docStatusCounts['ส่งมอบงานแล้ว'] || 0}</p>
               </div>
             </div>
           </div>
@@ -225,6 +269,17 @@ export default function App() {
               />
             </div>
             
+            <select 
+              value={selectedSystem} 
+              onChange={(e) => setSelectedSystem(e.target.value)}
+              className="text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-slate-700 font-medium cursor-pointer"
+            >
+              <option value="">ระบบ ทั้งหมด</option>
+              {systemList.map((sys, index) => (
+                <option key={index} value={sys}>{sys}</option>
+              ))}
+            </select>
+
             <select 
               value={selectedProvince} 
               onChange={(e) => setSelectedProvince(e.target.value)}
@@ -265,7 +320,7 @@ export default function App() {
             >
               <option value="">สถานะการติดตั้ง ทั้งหมด</option>
               <option value="ติดตั้งสำเร็จ">ติดตั้งสำเร็จ</option>
-              <option value="ยังไม่ได้ดำเนินการ">ยังไม่ได้ดำเนินการ</option>
+              <option value="ยังไม่ดำเนินการ">ยังไม่ดำเนินการ</option>
             </select>
 
             <select 
@@ -316,7 +371,7 @@ export default function App() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-          <div className={`${selectedHospital ? 'lg:col-span-8' : 'lg:col-span-12'} transition-all duration-300`}>
+          <div className={`${selectedHospital?.isExpanded ? 'hidden' : selectedHospital ? 'lg:col-span-8' : 'lg:col-span-12'} transition-all duration-300`}>
             {loading ? (
               <div className="text-center py-12 text-slate-400 text-xs">กำลังโหลดข้อมูลจาก Google Sheet...</div>
             ) : viewMode === 'cards' ? (
@@ -384,13 +439,29 @@ export default function App() {
 
           {/* 5. Detail Drawer */}
           {selectedHospital && (
-            <div className="lg:col-span-4 bg-white rounded-2xl border border-slate-200 p-5 shadow-lg relative h-fit sticky top-6">
-              <button 
-                onClick={() => setSelectedHospital(null)}
-                className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100"
-              >
-                <X className="w-5 h-5" />
-              </button>
+            <div className={`bg-white rounded-2xl border border-slate-200 p-5 shadow-lg relative h-fit sticky top-6 transition-all duration-300 ${
+              selectedHospital.isExpanded ? 'lg:col-span-12' : 'lg:col-span-4'
+            }`}>
+              {/* ปุ่มควบคุม (ขยาย/ย่อ และ ปิด) */}
+              <div className="absolute top-4 right-4 flex items-center gap-1">
+                <button 
+                  onClick={() => setSelectedHospital({
+                    ...selectedHospital, 
+                    isExpanded: !selectedHospital.isExpanded
+                  })}
+                  className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+                  title={selectedHospital.isExpanded ? "ย่อขนาด" : "ขยายให้กว้างขึ้น"}
+                >
+                  {selectedHospital.isExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                </button>
+                <button 
+                  onClick={() => setSelectedHospital(null)}
+                  className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+                  title="ปิด"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
 
               <div className="flex items-center gap-2 mb-3">
                 {getStatusBadge(selectedHospital['สถานะการติดตั้ง'])}
@@ -406,34 +477,38 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="border-b border-slate-100 mb-4 pb-2 flex gap-4 text-xs font-bold text-slate-500">
-                <span className="text-blue-600 border-b-2 border-blue-600 pb-2">รายละเอียด</span>
-                <span className="hover:text-slate-800 cursor-pointer">เอกสาร</span>
-                <span className="hover:text-slate-800 cursor-pointer">ประวัติการติดตั้ง</span>
-              </div>
-
-              <div className="space-y-3 text-xs text-slate-600 mb-6">
+              {/* รายละเอียดข้อมูล */}
+              <div className="space-y-3 text-xs text-slate-600 mb-4 pt-2 border-t border-slate-100">
                 <div className="flex justify-between py-1 border-b border-slate-50">
-                  <span className="text-slate-400">งวดงาน</span>
-                  <span className="font-bold text-purple-600">{selectedHospital['งวดงาน']}</span>
+                  <span className="text-slate-400">ระบบ</span>
+                  <span className="font-bold text-slate-800">{selectedHospital['ระบบ'] || 'NHIPAgent'}</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-slate-50">
+                  <span className="text-slate-400">เจ้าหน้าที่ติดตั้ง</span>
+                  <span className="font-bold text-slate-800">{selectedHospital['เจ้าหน้าที่ติดตั้ง'] || '-'}</span>
                 </div>
                 <div className="flex justify-between py-1 border-b border-slate-50">
                   <span className="text-slate-400">สถานะการติดตั้ง</span>
-                  <span className="font-bold text-emerald-600">✓ {selectedHospital['สถานะการติดตั้ง'] || '-'}</span>
+                  <span className="font-bold text-emerald-600">{selectedHospital['สถานะการติดตั้ง'] || '-'}</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-slate-50">
+                  <span className="text-slate-400">วันที่ติดตั้งสำเร็จ</span>
+                  <span className="font-bold text-slate-800">{formatDate(selectedHospital['วันที่ติดตั้งสำเร็จ'])}</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-slate-50">
+                  <span className="text-slate-400">งวดงาน</span>
+                  <span className="font-bold text-purple-600">{selectedHospital['งวดงาน'] || '-'}</span>
                 </div>
                 <div className="flex justify-between py-1 border-b border-slate-50">
                   <span className="text-slate-400">สถานะเอกสาร</span>
                   <span className="font-bold text-blue-600">{selectedHospital['สถานะเอกสาร'] || '-'}</span>
                 </div>
-              </div>
-
-              <div className="flex gap-2">
-                <button className="flex-1 flex items-center justify-center gap-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all">
-                  <Printer className="w-3.5 h-3.5" /> พิมพ์รายงาน
-                </button>
-                <button className="flex-1 flex items-center justify-center gap-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-500/20 transition-all">
-                  <Edit3 className="w-3.5 h-3.5" /> แก้ไขข้อมูล
-                </button>
+                <div className="flex flex-col py-1 gap-1 border-b border-slate-50">
+                  <span className="text-slate-400">หมายเหตุ</span>
+                  <div className="font-medium text-slate-700 bg-slate-50 p-2.5 rounded-xl border border-slate-100 max-h-48 overflow-y-auto whitespace-pre-line text-xs leading-relaxed">
+                    {selectedHospital['หมายเหตุ'] || '-'}
+                  </div>
+                </div>
               </div>
             </div>
           )}
