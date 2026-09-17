@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Building2, LayoutGrid, Table as TableIcon, Search, 
   Download, RotateCcw, MapPin, Monitor, ChevronRight, X, Edit3, Printer, CheckCircle2, Clock
