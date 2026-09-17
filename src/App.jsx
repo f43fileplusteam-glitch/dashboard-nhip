@@ -34,19 +34,26 @@ export default function App() {
   }, []);
 
   // ระบบกรองข้อมูล Real-time (อ้างอิงคอลัมน์ภาษาไทย)
+  // ระบบกรองข้อมูล Real-time (อ้างอิงคอลัมน์ภาษาไทย)
   const filteredHospitals = useMemo(() => {
     return hospitalData.filter(item => {
       const name = item['ชื่อโรงพยาบาล'] || '';
       const code = item['รหัสสถานพยาบาล'] || '';
       const province = item['จังหวัด'] || '';
+      const zone = String(item['เขต'] || '');
+      const status = item['สถานะการติดตั้ง'] || '';
+      const installment = item['งวดงาน'] || '';
 
       const matchSearch = name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           code.includes(searchTerm) || 
                           province.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchProvince = selectedProvince ? province === selectedProvince : true;
-      const matchZone = selectedZone ? String(item['เขต']) === String(selectedZone) : true;
-      const matchStatus = selectedStatus ? item['สถานะการติดตั้ง'] === selectedStatus : true;
-      const matchInstallment = selectedInstallment ? item['งวดงาน'] === selectedInstallment : true;
+      
+      // ใช้ .includes() แทน === เพื่อให้รองรับข้อความที่มีรหัสหรือคำย่อย
+      const matchProvince = selectedProvince ? province.includes(selectedProvince) : true;
+      const matchZone = selectedZone ? zone.includes(selectedZone) : true;
+      const matchStatus = selectedStatus ? status.includes(selectedStatus) : true;
+      const matchInstallment = selectedInstallment ? installment.includes(selectedInstallment) : true;
+
       return matchSearch && matchProvince && matchZone && matchStatus && matchInstallment;
     });
   }, [hospitalData, searchTerm, selectedProvince, selectedZone, selectedStatus, selectedInstallment]);
