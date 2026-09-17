@@ -15,7 +15,7 @@ export default function App() {
   const [selectedStatus, setSelectedStatus] = useState('');
   const [selectedInstallment, setSelectedInstallment] = useState('');
 
-  // ชุดข้อมูลโรงพยาบาลพร้อมข้อมูลงวดงาน
+  // ชุดข้อมูลโรงพยาบาล
   const hospitalData = [
     { id: '11231', name: 'โรงพยาบาลขาณุวรลักษบุรี', province: 'กำแพงเพชร', zone: '5', status: 'ยังไม่ได้ดำเนินการ', docStatus: 'ส่งมอบงานแล้ว', installment: 'งวด 5', date: '15 ก.ย. 2568', version: 'v1.2.3', installer: 'สมชาย ใจดี', pisDate: '8 ก.ย. 2568', installDate: '12 ก.ย. 2568' },
     { id: '11232', name: 'โรงพยาบาลคลองขลุง', province: 'กำแพงเพชร', zone: '5', status: 'ยังไม่ได้ดำเนินการ', docStatus: 'ส่งมอบงานแล้ว', installment: 'งวด 5', date: '14 ก.ย. 2568', version: 'v1.2.3', installer: 'สมชาย ใจดี', pisDate: '7 ก.ย. 2568', installDate: '11 ก.ย. 2568' },
@@ -121,69 +121,72 @@ export default function App() {
           </div>
         </div>
 
-        {/* 2. สรุปสถานะงวดงาน */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6">
-          <h3 className="text-xs font-bold text-slate-700 mb-3">สถานะแยกตามงวดงาน</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-7 gap-3 text-center">
-            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-              <p className="text-[11px] text-slate-500 mb-1">งวด 1</p>
-              <p className="text-lg font-black text-slate-800">120</p>
+        {/* 2. สถานะงวดงาน (ซ้าย) และ สถานะเอกสาร (ขวา) ในแถวเดียวกัน */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-6">
+          {/* ซ้าย: สถานะแยกตามงวดงาน */}
+          <div className="lg:col-span-6 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+            <h3 className="text-xs font-bold text-slate-700 mb-3">สถานะแยกตามงวดงาน</h3>
+            <div className="grid grid-cols-4 sm:grid-cols-7 gap-2 text-center">
+              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                <p className="text-[10px] text-slate-500 mb-1">งวด 1</p>
+                <p className="text-base font-black text-slate-800">120</p>
+              </div>
+              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                <p className="text-[10px] text-slate-500 mb-1">งวด 2</p>
+                <p className="text-base font-black text-slate-800">115</p>
+              </div>
+              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                <p className="text-[10px] text-slate-500 mb-1">งวด 3</p>
+                <p className="text-base font-black text-slate-800">130</p>
+              </div>
+              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                <p className="text-[10px] text-slate-500 mb-1">งวด 4</p>
+                <p className="text-base font-black text-slate-800">98</p>
+              </div>
+              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                <p className="text-[10px] text-slate-500 mb-1">งวด 5</p>
+                <p className="text-base font-black text-slate-800">142</p>
+              </div>
+              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                <p className="text-[10px] text-slate-500 mb-1">งวด 6</p>
+                <p className="text-base font-black text-slate-800">84</p>
+              </div>
+              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                <p className="text-[10px] text-slate-500 mb-1">งวด 7</p>
+                <p className="text-base font-black text-slate-800">80</p>
+              </div>
             </div>
-            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-              <p className="text-[11px] text-slate-500 mb-1">งวด 2</p>
-              <p className="text-lg font-black text-slate-800">115</p>
-            </div>
-            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-              <p className="text-[11px] text-slate-500 mb-1">งวด 3</p>
-              <p className="text-lg font-black text-slate-800">130</p>
-            </div>
-            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-              <p className="text-[11px] text-slate-500 mb-1">งวด 4</p>
-              <p className="text-lg font-black text-slate-800">98</p>
-            </div>
-            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-              <p className="text-[11px] text-slate-500 mb-1">งวด 5</p>
-              <p className="text-lg font-black text-slate-800">142</p>
-            </div>
-            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-              <p className="text-[11px] text-slate-500 mb-1">งวด 6</p>
-              <p className="text-lg font-black text-slate-800">84</p>
-            </div>
-            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-              <p className="text-[11px] text-slate-500 mb-1">งวด 7</p>
-              <p className="text-lg font-black text-slate-800">80</p>
+          </div>
+
+          {/* ขวา: สถานะเอกสารตามงวดงาน */}
+          <div className="lg:col-span-6 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+            <h3 className="text-xs font-bold text-slate-700 mb-3">สถานะเอกสารตามงวดงาน</h3>
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 text-center">
+              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                <p className="text-[10px] text-slate-500 mb-1">กำลังจัดทำรายงาน</p>
+                <p className="text-base font-black text-blue-600">45</p>
+              </div>
+              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                <p className="text-[10px] text-slate-500 mb-1">ส่ง PIS ตรวจ</p>
+                <p className="text-base font-black text-indigo-600">38</p>
+              </div>
+              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                <p className="text-[10px] text-slate-500 mb-1">ส่ง รพ. เซ็น</p>
+                <p className="text-base font-black text-purple-600">62</p>
+              </div>
+              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                <p className="text-[10px] text-slate-500 mb-1">มีลายเซ็น PIS</p>
+                <p className="text-base font-black text-teal-600">54</p>
+              </div>
+              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                <p className="text-[10px] text-slate-500 mb-1">ส่งมอบงานแล้ว</p>
+                <p className="text-base font-black text-emerald-600">410</p>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* 3. สถานะเอกสารตามงวดงาน */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6">
-          <h3 className="text-xs font-bold text-slate-700 mb-3">สถานะเอกสารตามงวดงาน</h3>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-center">
-            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-              <p className="text-[11px] text-slate-500 mb-1">กำลังจัดทำรายงาน</p>
-              <p className="text-lg font-black text-blue-600">45</p>
-            </div>
-            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-              <p className="text-[11px] text-slate-500 mb-1">ส่ง PIS ตรวจ</p>
-              <p className="text-lg font-black text-indigo-600">38</p>
-            </div>
-            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-              <p className="text-[11px] text-slate-500 mb-1">ส่ง รพ. เซ็น</p>
-              <p className="text-lg font-black text-purple-600">62</p>
-            </div>
-            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-              <p className="text-[11px] text-slate-500 mb-1">มีลายเซ็น PIS</p>
-              <p className="text-lg font-black text-teal-600">54</p>
-            </div>
-            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-              <p className="text-[11px] text-slate-500 mb-1">ส่งมอบงานแล้ว</p>
-              <p className="text-lg font-black text-emerald-600">410</p>
-            </div>
-          </div>
-        </div>
-
-        {/* 4. Filter Bar */}
+        {/* 3. Filter Bar */}
         <div className="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-wrap gap-3 items-center justify-between">
           <div className="flex flex-wrap gap-2 items-center flex-1">
             <div className="relative min-w-[200px]">
@@ -260,7 +263,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* 5. Display Toggle & Cards/Table View */}
+        {/* 4. Display Toggle & Cards/Table View */}
         <div className="flex justify-between items-center mb-4">
           <h3 className="font-extrabold text-slate-800 text-sm">รายการโรงพยาบาล ({filteredHospitals.length} แห่ง)</h3>
           <div className="bg-slate-200/80 p-1 rounded-xl flex gap-1">
@@ -348,7 +351,7 @@ export default function App() {
             )}
           </div>
 
-          {/* 6. Detail Drawer */}
+          {/* 5. Detail Drawer */}
           {selectedHospital && (
             <div className="lg:col-span-4 bg-white rounded-2xl border border-slate-200 p-5 shadow-lg relative h-fit sticky top-6">
               <button 
