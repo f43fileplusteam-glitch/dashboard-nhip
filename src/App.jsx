@@ -15,7 +15,7 @@ export default function App() {
   const [selectedStatus, setSelectedStatus] = useState('');
   const [selectedInstallment, setSelectedInstallment] = useState('');
 
-  // 1. เปลี่ยนมาใช้ State สำหรับเก็บข้อมูลที่ดึงมาจาก Google Sheet
+  // 1. State สำหรับเก็บข้อมูลจาก Google Sheet
   const [hospitalData, setHospitalData] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -33,17 +33,23 @@ export default function App() {
       });
   }, []);
 
-  // ระบบกรองข้อมูล Real-time
+  // ระบบกรองข้อมูล Real-time (อ้างอิงคอลัมน์ภาษาไทย)
   const filteredHospitals = useMemo(() => {
     return hospitalData.filter(item => {
-      const matchSearch = item['ชื่อโรงพยาบาล'].includes(searchTerm) || item['รหัสสถานพยาบาล'].includes(searchTerm);
-      const matchProvince = selectedProvince ? item['จังหวัด'] === selectedProvince : true;
-      const matchZone = selectedZone ? item['เขต'] === selectedZone : true;
+      const name = item['ชื่อโรงพยาบาล'] || '';
+      const code = item['รหัสสถานพยาบาล'] || '';
+      const province = item['จังหวัด'] || '';
+
+      const matchSearch = name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          code.includes(searchTerm) || 
+                          province.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchProvince = selectedProvince ? province === selectedProvince : true;
+      const matchZone = selectedZone ? String(item['เขต']) === String(selectedZone) : true;
       const matchStatus = selectedStatus ? item['สถานะการติดตั้ง'] === selectedStatus : true;
       const matchInstallment = selectedInstallment ? item['งวดงาน'] === selectedInstallment : true;
       return matchSearch && matchProvince && matchZone && matchStatus && matchInstallment;
     });
-  }, [searchTerm, selectedProvince, selectedZone, selectedStatus, selectedInstallment]);
+  }, [hospitalData, searchTerm, selectedProvince, selectedZone, selectedStatus, selectedInstallment]);
 
   const handleReset = () => {
     setSearchTerm('');
@@ -60,7 +66,7 @@ export default function App() {
     if (status === 'ยังไม่ได้ดำเนินการ') {
       return <span className="bg-amber-100 text-amber-700 text-xs px-2.5 py-1 rounded-full font-bold">⏳ {status}</span>;
     }
-    return <span className="bg-blue-100 text-blue-700 text-xs px-2.5 py-1 rounded-full font-bold">📄 {status}</span>;
+    return <span className="bg-blue-100 text-blue-700 text-xs px-2.5 py-1 rounded-full font-bold">📄 {status || 'กำลังจัดทำรายงาน'}</span>;
   };
 
   const getBorderColor = (status) => {
@@ -104,7 +110,7 @@ export default function App() {
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
             <div>
               <p className="text-xs font-semibold text-slate-500 mb-1">สถานะการติดตั้งทั้งหมด</p>
-              <p className="text-3xl font-black text-slate-800">769 <span className="text-xs font-normal text-slate-400">แห่ง</span></p>
+              <p className="text-3xl font-black text-slate-800">{hospitalData.length || 769} <span className="text-xs font-normal text-slate-400">แห่ง</span></p>
             </div>
             <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">🏥</div>
           </div>
@@ -124,9 +130,8 @@ export default function App() {
           </div>
         </div>
 
-        {/* 2. สถานะงวดงาน (ตัดงวด 1-2 ออก + แสดงเป้าหมาย) และ สถานะเอกสาร */}
+        {/* 2. สถานะงวดงาน & สถานะเอกสาร */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-6">
-          {/* ซ้าย: สถานะแยกตามงวดงาน (เริ่มงวด 3 - 7) */}
           <div className="lg:col-span-6 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
             <h3 className="text-xs font-bold text-slate-700 mb-3">สถานะแยกตามงวดงาน</h3>
             <div className="grid grid-cols-5 gap-2 text-center">
@@ -153,7 +158,6 @@ export default function App() {
             </div>
           </div>
 
-          {/* ขวา: สถานะเอกสารตามงวดงาน */}
           <div className="lg:col-span-6 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
             <h3 className="text-xs font-bold text-slate-700 mb-3">สถานะเอกสารตามงวดงาน</h3>
             <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 text-center">
@@ -237,7 +241,6 @@ export default function App() {
               <option value="">สถานะการติดตั้ง ทั้งหมด</option>
               <option value="ติดตั้งเสร็จแล้ว">ติดตั้งเสร็จแล้ว</option>
               <option value="ยังไม่ได้ดำเนินการ">ยังไม่ได้ดำเนินการ</option>
-              <option value="กำลังจัดทำรายงาน">กำลังจัดทำรายงาน</option>
             </select>
           </div>
           <div className="flex gap-2">
@@ -277,34 +280,36 @@ export default function App() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
           <div className={`${selectedHospital ? 'lg:col-span-8' : 'lg:col-span-12'} transition-all duration-300`}>
-            {viewMode === 'cards' ? (
+            {loading ? (
+              <div className="text-center py-12 text-slate-400 text-xs">กำลังโหลดข้อมูลจาก Google Sheet...</div>
+            ) : viewMode === 'cards' ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredHospitals.map((hosp) => (
+                {filteredHospitals.map((hosp, idx) => (
                   <div 
-                    key={hosp.id}
+                    key={hosp['รหัสสถานพยาบาล'] || idx}
                     onClick={() => setSelectedHospital(hosp)}
-                    className={`bg-white p-4 rounded-2xl shadow-sm hover:shadow-lg hover:-translate-y-0.5 cursor-pointer transition-all ${getBorderColor(hosp.status)} ${selectedHospital?.id === hosp.id ? 'ring-2 ring-blue-500' : ''}`}
+                    className={`bg-white p-4 rounded-2xl shadow-sm hover:shadow-lg hover:-translate-y-0.5 cursor-pointer transition-all ${getBorderColor(hosp['สถานะการติดตั้ง'])} ${selectedHospital?.['รหัสสถานพยาบาล'] === hosp['รหัสสถานพยาบาล'] ? 'ring-2 ring-blue-500' : ''}`}
                   >
                     <div className="flex justify-between items-start mb-3">
                       <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600">
                         <Building2 className="w-4 h-4" />
                       </div>
-                      {getStatusBadge(hosp.status)}
+                      {getStatusBadge(hosp['สถานะการติดตั้ง'])}
                     </div>
-                    <h4 className="font-extrabold text-slate-800 text-sm mb-0.5">{hosp.name}</h4>
-                    <p className="text-xs font-semibold text-slate-400 mb-3">{hosp.id}</p>
+                    <h4 className="font-extrabold text-slate-800 text-sm mb-0.5">{hosp['ชื่อโรงพยาบาล']}</h4>
+                    <p className="text-xs font-semibold text-slate-400 mb-3">{hosp['รหัสสถานพยาบาล']}</p>
                     <div className="flex items-center justify-between text-[11px] text-slate-500 font-medium mb-3">
                       <span className="flex items-center gap-1">
-                        <MapPin className="w-3.5 h-3.5 text-slate-400" /> {hosp.province} เขต {hosp.zone}
+                        <MapPin className="w-3.5 h-3.5 text-slate-400" /> {hosp['จังหวัด']} เขต {hosp['เขต']}
                       </span>
-                      <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-md font-bold">{hosp.installment}</span>
+                      <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-md font-bold">{hosp['งวดงาน']}</span>
                     </div>
                     <div className="flex gap-1.5 mb-3">
                       <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-semibold">Windows</span>
                       <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-semibold">Ubuntu</span>
                     </div>
                     <div className="pt-2 border-t border-slate-100 flex justify-between items-center text-[11px] text-slate-400">
-                      <span>อัปเดตล่าสุด {hosp.date}</span>
+                      <span>อัปเดตล่าสุด -</span>
                       <ChevronRight className="w-4 h-4 text-blue-600 font-bold" />
                     </div>
                   </div>
@@ -324,18 +329,18 @@ export default function App() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {filteredHospitals.map(hosp => (
+                    {filteredHospitals.map((hosp, idx) => (
                       <tr 
-                        key={hosp.id} 
+                        key={hosp['รหัสสถานพยาบาล'] || idx} 
                         onClick={() => setSelectedHospital(hosp)}
                         className="hover:bg-blue-50/50 cursor-pointer transition-colors"
                       >
-                        <td className="p-3 font-semibold text-slate-500">{hosp.id}</td>
-                        <td className="p-3 font-bold text-slate-800">{hosp.name}</td>
-                        <td className="p-3 text-slate-600">{hosp.province} (เขต {hosp.zone})</td>
-                        <td className="p-3 font-bold text-purple-600">{hosp.installment}</td>
-                        <td className="p-3">{getStatusBadge(hosp.status)}</td>
-                        <td className="p-3 text-slate-600">{hosp.docStatus}</td>
+                        <td className="p-3 font-semibold text-slate-500">{hosp['รหัสสถานพยาบาล']}</td>
+                        <td className="p-3 font-bold text-slate-800">{hosp['ชื่อโรงพยาบาล']}</td>
+                        <td className="p-3 text-slate-600">{hosp['จังหวัด']} (เขต {hosp['เขต']})</td>
+                        <td className="p-3 font-bold text-purple-600">{hosp['งวดงาน']}</td>
+                        <td className="p-3">{getStatusBadge(hosp['สถานะการติดตั้ง'])}</td>
+                        <td className="p-3 text-slate-600">{hosp['สถานะเอกสาร'] || 'กำลังจัดทำรายงาน'}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -355,7 +360,7 @@ export default function App() {
               </button>
 
               <div className="flex items-center gap-2 mb-3">
-                {getStatusBadge(selectedHospital.status)}
+                {getStatusBadge(selectedHospital['สถานะการติดตั้ง'])}
               </div>
 
               <div className="flex items-center gap-3 mb-4">
@@ -363,8 +368,8 @@ export default function App() {
                   <Building2 className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-slate-800 text-base">{selectedHospital.name}</h3>
-                  <p className="text-xs text-slate-400">{selectedHospital.id} • {selectedHospital.province} เขต {selectedHospital.zone}</p>
+                  <h3 className="font-extrabold text-slate-800 text-base">{selectedHospital['ชื่อโรงพยาบาล']}</h3>
+                  <p className="text-xs text-slate-400">{selectedHospital['รหัสสถานพยาบาล']} • {selectedHospital['จังหวัด']} เขต {selectedHospital['เขต']}</p>
                 </div>
               </div>
 
@@ -377,27 +382,15 @@ export default function App() {
               <div className="space-y-3 text-xs text-slate-600 mb-6">
                 <div className="flex justify-between py-1 border-b border-slate-50">
                   <span className="text-slate-400">งวดงาน</span>
-                  <span className="font-bold text-purple-600">{selectedHospital.installment}</span>
+                  <span className="font-bold text-purple-600">{selectedHospital['งวดงาน']}</span>
                 </div>
                 <div className="flex justify-between py-1 border-b border-slate-50">
                   <span className="text-slate-400">สถานะการติดตั้ง</span>
-                  <span className="font-bold text-emerald-600">✓ {selectedHospital.status}</span>
+                  <span className="font-bold text-emerald-600">✓ {selectedHospital['สถานะการติดตั้ง']}</span>
                 </div>
                 <div className="flex justify-between py-1 border-b border-slate-50">
                   <span className="text-slate-400">สถานะเอกสาร</span>
-                  <span className="font-bold text-emerald-600">✓ {selectedHospital.docStatus}</span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-slate-50">
-                  <span className="text-slate-400">วันที่ส่งเอกสาร PIS ตรวจ</span>
-                  <span className="font-bold text-slate-800">{selectedHospital.pisDate}</span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-slate-50">
-                  <span className="text-slate-400">เจ้าหน้าที่ติดตั้ง</span>
-                  <span className="font-bold text-slate-800">{selectedHospital.installer}</span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-slate-50">
-                  <span className="text-slate-400">วันที่ติดตั้งเสร็จ</span>
-                  <span className="font-bold text-slate-800">{selectedHospital.installDate}</span>
+                  <span className="font-bold text-emerald-600">✓ {selectedHospital['สถานะเอกสาร'] || 'กำลังจัดทำรายงาน'}</span>
                 </div>
               </div>
 
