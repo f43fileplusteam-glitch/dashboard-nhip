@@ -33,22 +33,33 @@ export default function App() {
       });
   }, []);
 
-  // ระบบกรองข้อมูล Real-time (อ้างอิงคอลัมน์ภาษาไทย)
-  // ระบบกรองข้อมูล Real-time (อ้างอิงคอลัมน์ภาษาไทย)
+  // ดึงรายการตัวเลือกที่ไม่ซ้ำกันจาก Google Sheet มาใส่ Dropdown แบบอัตโนมัติ
+  const provinceList = useMemo(() => {
+    return [...new Set(hospitalData.map(item => item['จังหวัด']).filter(Boolean))].sort();
+  }, [hospitalData]);
+
+  const zoneList = useMemo(() => {
+    return [...new Set(hospitalData.map(item => item['เขต']).filter(Boolean))].sort((a, b) => Number(a) - Number(b));
+  }, [hospitalData]);
+
+  const installmentList = useMemo(() => {
+    return [...new Set(hospitalData.map(item => item['งวดงาน']).filter(Boolean))];
+  }, [hospitalData]);
+
+  // ระบบกรองข้อมูล Real-time (แปลงค่าเป็น String ป้องกันหน้าจอขาว)
   const filteredHospitals = useMemo(() => {
     return hospitalData.filter(item => {
-      const name = item['ชื่อโรงพยาบาล'] || '';
-      const code = item['รหัสสถานพยาบาล'] || '';
-      const province = item['จังหวัด'] || '';
+      const name = String(item['ชื่อโรงพยาบาล'] || '');
+      const code = String(item['รหัสสถานพยาบาล'] || '');
+      const province = String(item['จังหวัด'] || '');
       const zone = String(item['เขต'] || '');
-      const status = item['สถานะการติดตั้ง'] || '';
-      const installment = item['งวดงาน'] || '';
+      const status = String(item['สถานะการติดตั้ง'] || '');
+      const installment = String(item['งวดงาน'] || '');
 
       const matchSearch = name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           code.includes(searchTerm) || 
                           province.toLowerCase().includes(searchTerm.toLowerCase());
       
-      // ใช้ .includes() แทน === เพื่อให้รองรับข้อความที่มีรหัสหรือคำย่อย
       const matchProvince = selectedProvince ? province.includes(selectedProvince) : true;
       const matchZone = selectedZone ? zone.includes(selectedZone) : true;
       const matchStatus = selectedStatus ? status.includes(selectedStatus) : true;
@@ -205,41 +216,40 @@ export default function App() {
                 className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500"
               />
             </div>
+            
             <select 
               value={selectedProvince} 
               onChange={(e) => setSelectedProvince(e.target.value)}
               className="text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-slate-700 font-medium cursor-pointer"
             >
               <option value="">จังหวัด ทั้งหมด</option>
-              <option value="กำแพงเพชร">กำแพงเพชร</option>
-              <option value="ชัยนาท">ชัยนาท</option>
-              <option value="สระแก้ว">สระแก้ว</option>
-              <option value="นครสวรรค์">นครสวรรค์</option>
-              <option value="เชียงใหม่">เชียงใหม่</option>
-              <option value="เชียงราย">เชียงราย</option>
+              {provinceList.map((prov, index) => (
+                <option key={index} value={prov}>{prov}</option>
+              ))}
             </select>
+
             <select 
               value={selectedZone} 
               onChange={(e) => setSelectedZone(e.target.value)}
               className="text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-slate-700 font-medium cursor-pointer"
             >
               <option value="">เขตสุขภาพ ทั้งหมด</option>
-              <option value="1">เขต 1</option>
-              <option value="5">เขต 5</option>
-              <option value="7">เขต 7</option>
+              {zoneList.map((z, index) => (
+                <option key={index} value={z}>เขต {z}</option>
+              ))}
             </select>
+
             <select 
               value={selectedInstallment} 
               onChange={(e) => setSelectedInstallment(e.target.value)}
               className="text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-slate-700 font-medium cursor-pointer"
             >
               <option value="">งวดงาน ทั้งหมด</option>
-              <option value="งวด 3">งวด 3</option>
-              <option value="งวด 4">งวด 4</option>
-              <option value="งวด 5">งวด 5</option>
-              <option value="งวด 6">งวด 6</option>
-              <option value="งวด 7">งวด 7</option>
+              {installmentList.map((inst, index) => (
+                <option key={index} value={inst}>{inst}</option>
+              ))}
             </select>
+
             <select 
               value={selectedStatus} 
               onChange={(e) => setSelectedStatus(e.target.value)}
@@ -250,6 +260,7 @@ export default function App() {
               <option value="ยังไม่ได้ดำเนินการ">ยังไม่ได้ดำเนินการ</option>
             </select>
           </div>
+
           <div className="flex gap-2">
             <button 
               onClick={handleReset}
